@@ -15,7 +15,7 @@ const piatti = [
     tag:       'Primo',
     desc:      'Sfoglia all\'uovo tirata a mano, ripiena di prosciutto e besciamella, gratinata al forno con ragù romagnolo. Il piatto simbolo della tradizione.',
     prezzo:    '14',
-    img:       'https://images.unsplash.com/photo-1621996346565-e3dbc353d2e5?w=520&q=75',
+    img:       'assets/nidi.jpg',
     imgAlt:    'Nidi di rondine al forno con ragù romagnolo',
   },
   {
@@ -23,7 +23,7 @@ const piatti = [
     tag:       'Primo',
     desc:      'Cappelletti ripieni di formaggio e carne in brodo di gallina tirato per tutta la mattina. Ricetta della nonna, invariata da sempre.',
     prezzo:    '13',
-    img:       'https://images.unsplash.com/photo-1574484284002-952d92456975?w=520&q=75',
+    img:       'assets/image.png',
     imgAlt:    'Cappelletti in brodo di gallina tradizionali',
   },
   {
@@ -31,7 +31,7 @@ const piatti = [
     tag:       'Primo',
     desc:      'Sfoglia gialla tirata a mano, tagliata a 8 mm, con ragù di manzo e maiale cotto cinque ore. Semplicità che non mente.',
     prezzo:    '12',
-    img:       'https://images.unsplash.com/photo-1555949258-eb67b1ef0ceb?w=520&q=75',
+    img:       'assets/tagliatella.jpg',
     imgAlt:    'Tagliatelle al ragù di carne romagnolo',
   },
   {
@@ -47,7 +47,7 @@ const piatti = [
     tag:       'Secondo',
     desc:      'Coniglio arrotolato con finocchietto selvatico, aglio e rosmarino, cotto lentamente al forno. La domenica sulle colline.',
     prezzo:    '18',
-    img:       'https://images.unsplash.com/photo-1598103442097-8b74394b95c7?w=520&q=75',
+    img:       'assets/coniglio.png',
     imgAlt:    'Coniglio in porchetta con erbe aromatiche',
   },
   {
@@ -57,22 +57,6 @@ const piatti = [
     prezzo:    '20',
     img:       'https://images.unsplash.com/photo-1544025162-d76694265947?w=520&q=75',
     imgAlt:    'Spiedo misto di carni allo spiedo',
-  },
-  {
-    titolo:    'Gnocco Fritto e Salumi',
-    tag:       'Antipasto',
-    desc:      'Gnocco fritto croccante con affettati misti romagnoli: squacquerone, prosciutto crudo, salame nostrano e lonza.',
-    prezzo:    '10',
-    img:       'https://images.unsplash.com/photo-1533622597524-a1215e26c0a2?w=520&q=75',
-    imgAlt:    'Gnocco fritto con salumi e squacquerone romagnolo',
-  },
-  {
-    titolo:    'Crema Fritta della Nonna',
-    tag:       'Dolce',
-    desc:      'Crema pasticcera alla vaniglia, raffreddata, fritta in pastella leggera e spolverata di zucchero a velo. Il dolce che non stanca mai.',
-    prezzo:    '7',
-    img:       'https://images.unsplash.com/photo-1559620192-032c4bc4674e?w=520&q=75',
-    imgAlt:    'Crema fritta romagnola spolverata di zucchero',
   },
 ];
 
@@ -151,29 +135,51 @@ function initStickyHeader() {
 
 /* ── MENU HAMBURGER (mobile) ─────────────────────────── */
 function initMobileMenu() {
-  const toggle = document.getElementById('nav-toggle');
-  const menu   = document.getElementById('nav-menu');
+  const toggle    = document.getElementById('nav-toggle');
+  const menu      = document.getElementById('nav-menu');
+  const closeBtn  = document.getElementById('nav-close');
+  const header    = document.getElementById('site-header');
   if (!toggle || !menu) return;
 
+  let _scrollY = 0;
+
   const apri = () => {
+    _scrollY = window.scrollY;
     toggle.classList.add('is-open');
     menu.classList.add('is-open');
+    header?.classList.add('menu-open');
     toggle.setAttribute('aria-expanded', 'true');
     toggle.setAttribute('aria-label', 'Chiudi menu');
-    document.body.style.overflow = 'hidden';
+    // Scroll lock cross-browser (incluso iOS Safari)
+    document.body.style.position = 'fixed';
+    document.body.style.top      = `-${_scrollY}px`;
+    document.body.style.left     = '0';
+    document.body.style.right    = '0';
   };
 
   const chiudi = () => {
     toggle.classList.remove('is-open');
     menu.classList.remove('is-open');
+    header?.classList.remove('menu-open');
     toggle.setAttribute('aria-expanded', 'false');
     toggle.setAttribute('aria-label', 'Apri menu');
-    document.body.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.top      = '';
+    document.body.style.left     = '';
+    document.body.style.right    = '';
+    // Ripristina posizione senza animazione smooth (evitiamo lo scroll visibile)
+    document.documentElement.style.scrollBehavior = 'auto';
+    window.scrollTo(0, _scrollY);
+    requestAnimationFrame(() => {
+      document.documentElement.style.scrollBehavior = '';
+    });
   };
 
   toggle.addEventListener('click', () =>
     menu.classList.contains('is-open') ? chiudi() : apri()
   );
+
+  if (closeBtn) closeBtn.addEventListener('click', chiudi);
 
   // Chiudi al clic su un link del menu
   menu.querySelectorAll('.nav-link').forEach((link) =>
@@ -333,6 +339,9 @@ function savePrenotazioneLocale(dati) {
 
 /* ── INIT ────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
+  // Disabilita scroll restoration del browser (evita scroll animato all'apertura pagina)
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+
   renderMenu();           // Inietta le card nel DOM prima di osservare
   initStickyHeader();
   initMobileMenu();
